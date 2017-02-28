@@ -2,10 +2,10 @@ var tmi = require('tmi.js');
 var express = require('express');
 var app = express();
 var channelName = "meastoso";
-var modsArray = []; // array of mods we only need to get once
 var scores = {}; // map to hold peoples scores
 var userAnswers = {}; // used to hold answers each question
-var modAnswers = {};
+var answersMap = {};
+var gameStarted = false; // default to false, let !start change this to true
 
 var options = {
         options: {
@@ -46,20 +46,51 @@ client.on('connected', function(address, port) {
         console.log("Connected!");
 });
 
+function populateQuestions() {
+	// https://opentdb.com/api.php?amount=30&category=15&type=multiple
+	var request = require('request');
+	request('https://opentdb.com/api.php?amount=30&category=15&type=multiple', function (error, response, data) {
+		if (!error && response.statusCode == 200) {
+			console.log(data) // Print the body of response.
+		}
+		else {
+			console.log("[ERROR] could you get questions from opentdb");
+		}
+	});
+}
+
 client.on('chat', function(channel, user, message, self) {
 	if (self) return;
 	var username = user['username'];
-        if ((user['mod'] || username === 'meastoso') && message.startsWith("!answer ")) {
-                // parse answer submitted by mods
-                var modAnswer = message.substring(8, message.length);
-                var currentAnswersMapSize = Object.keys(modAnswers).length + 1;
-                modAnswers[currentAnswersMapSize] = modAnswer;
+	/* ###########################
+	 *     !answer
+	 * ########################### */
+        if ((user['mod'] || username === channelName) && message.startsWith("!answer")) {
+		// TODO: send message to client websocket to show answer
+
+		// answer current question
+                var currentAnswersMapSize = Object.keys(answersMap).length + 1;
+                answersMap[currentAnswersMapSize] = modAnswer;
                 console.log("Mod " + username + " answered the question with answer: '" + modAnswer + "'. Saving as answer key: " + currentAnswersMapSize);
         }
+	/* ###########################
+         *     !next
+         * ########################### */
+	else if ((user['mod'] || username === channelName) && message.startsWith("!next")) {
+                // parse answer submitted by mods
+                var modAnswer = message.substring(8, message.length);
+                var currentAnswersMapSize = Object.keys(answersMap).length + 1;
+                answersMap[currentAnswersMapSize] = modAnswer;
+                console.log("Mod " + username + " answered the question with answer: '" + modAnswer + "'. Saving as answer key: " + currentAnswersMapSize);
+        }
+	/* ###########################
+	 *     !guess
+	 * ###########################*/
         else if (message.startsWith("!guess ")) {
                 // parse guess/answer
-                var userGuess = message.substring(7, message.length);
-                var currentAnswersMapSize = Object.keys(modAnswers).length + 1;
+                var userGuessUnparsed = message.substring(7, message.length);
+		var userGuess = userGuessUnparse.toLowerCase(); // make everything lowercase for final grading/scoring
+                var currentAnswersMapSize = Object.keys(answersMap).length + 1;
                 // this is wrong, need to make a nested object for each user and check it
 
                 // check if user has an answer map yet
@@ -74,6 +105,9 @@ client.on('chat', function(channel, user, message, self) {
                         thisUserAnswers[currentAnswersMapSize] = userGuess;
                 }
         }
+	/* ###########################
+         *      !score
+         * ########################### */
         else if (message.startsWith("!score")) {
                 var percentCorrect = 0;
                 var sessionScore = 0;
@@ -85,12 +119,12 @@ client.on('chat', function(channel, user, message, self) {
                 else {
                         // calculate score
                         // TODO: move this to shared method
-var totalCountedAnswers = 0;
+			var totalCountedAnswers = 0;
                         var totalCorrectAnswers = 0;
                         for (var answer in thisUserAnswers) {
                                 console.log(answer + ": " + thisUserAnswers[answer]);
                                 // go get answer from modAnswers map
-                                var matchingModAnswer = modAnswers[answer];
+                                var matchingModAnswer = answersMap[answer];
                                 if (matchingModAnswer !== undefined && matchingModAnswer !== null) {
                                         // found matching mod answer, check values
                                         if (thisUserAnswers[answer] == matchingModAnswer) {
@@ -100,23 +134,33 @@ var totalCountedAnswers = 0;
                                 }
                         }
                         if (totalCountedAnswers !== 0) {
-                                percentCorrect = totalCorrectAnswers / totalCountedAnswers * 100.0;
+                                percentCorrect = Math.round(totalCorrectAnswers / totalCountedAnswers * 100);
                         }
                         responseMsg = username + "'s score is: " + percentCorrect + "% with " + totalCorrectAnswers + " correct answers!";
                 }
                 client.action(channelName, responseMsg);
         }
+	/* ###########################
+	 *     !trivia
+	 * ########################### */
         else if (message.startsWith("!trivia")) {
                 var msg = "We're playing TRIVIA! Throughout the stream we will ask random trivia questions. You can answer with the command '!guess <your answer>'. You can change your answer with the same '!guess' command as many times as you need until a mod answers the question. Use '!score' to find out your score."
                 client.say(channelName, msg);
         }
+	/* ###########################
+	 *      !start
+	 * ##########################*/
+	else if (username === channelName && message.startsWith("!start")) { // only channel owner can start this
+		if (gameStarted) {
+			console.log("already started game!");
+		}
+		else {
+			// START THE TRIVIA GAME!!
+			console.log("STARTING TRIVIA!");
+			gameStarted = true;
+			populateQuestions();
+		}
+	}
 
 });
 
-function getMods() {
-	client.mods(channelName).then(function(data) {
-		modsArray = data;
-	}).catch(function(err) {
-		console.log("caught error getting mods: " + err);
-	});
-}
