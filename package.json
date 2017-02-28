@@ -1,5 +1,5 @@
 {
-  "name": “Trivia Bot“,
+  "name": 'Trivia Bot',
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
