@@ -6,6 +6,10 @@ var scores = {}; // map to hold peoples scores
 var userAnswers = {}; // used to hold answers each question
 var answersMap = {};
 var gameStarted = false; // default to false, let !start change this to true
+var questions = [];
+var currentParsedQuestion = {};
+var currentQuestionIndex = 0; // used to track the index of the current question from questions array
+var leaderBoard = [];
 
 var options = {
         options: {
@@ -32,31 +36,167 @@ app.listen(3000, function () {
 app.use(express.static('site'));
 
 app.get('/getLeaderboard', function (req, res) {
-	var test = [
+	/*var test = [
 		{ 'rank': 1, 'name': 'aprilk', 'score': '124', 'percentCorrect': '80' },
 		{ 'rank': 2, 'name': 'lanz', 'score': '123', 'percentCorrect': '75' },
 		{ 'rank': 3, 'name': 'zaes', 'score': '122', 'percentCorrect': '70' },
 		{ 'rank': 4, 'name': '1234567890123456789012345', 'score': '121', 'percentCorrect': '60' },
 		{ 'rank': 5, 'name': 'meast', 'score': '120', 'percentCorrect': '50' }
-	];
-	res.send(test); // TODO replace with leaderboards
+	];*/
+	res.send(leaderBoard); // TODO replace with leaderboards
 })
 
 client.on('connected', function(address, port) {
         console.log("Connected!");
 });
 
+/**
+* TODO: document method
+*/
 function populateQuestions() {
-	// https://opentdb.com/api.php?amount=30&category=15&type=multiple
 	var request = require('request');
 	request('https://opentdb.com/api.php?amount=30&category=15&type=multiple', function (error, response, data) {
 		if (!error && response.statusCode == 200) {
-			console.log(data) // Print the body of response.
+			var resp = JSON.parse(data);
+			if (resp["response_code"] != 0) {
+				console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
+				return;
+			}
+			questions = resp["results"]; // store question objects in scoped variable accessible by other methods
 		}
 		else {
-			console.log("[ERROR] could you get questions from opentdb");
+			console.log("[ERROR] failed to get questions from opentdb: " + error);
 		}
 	});
+}
+
+/**
+* TODO: document
+* @return js obj with the following structure:
+	{ 
+		difficulty: diff,
+		question: ques,
+		answer: ans,
+		options: {
+			a: optionA,
+			b: optionB,
+			c: optionC,
+			d: optionD
+		}
+	}
+*/
+function parseQuestion(question) {
+	console.log("Parsing question, original:");
+	console.log(question);
+	var parsedQuestion = {
+		"difficulty": question["difficulty"],
+		"question": question["question"]
+	};
+	var answerNum = Math.floor(Math.random() * 3); // random number between 0 and 3
+	var options = {};
+	var incorrectAnswersArr = question["incorrect_answers"];
+	for (var i = 0; i < 4; i++) {
+		var alphaChar = String.fromCharCode(i+97); // 'a' == ascii #97
+		if (i == answerNum) {
+			// insert the answer as option here
+			options[alphaChar] = question["correct_answer"];
+			parsedQuestion["answer"] = alphaChar;
+		}
+		else {
+			// make a clone of the string char as we splice the array
+			options[alphaChar] = JSON.parse(JSON.stringify(incorrectAnswersArr[0]));
+			incorrectAnswersArr.splice(0,1); // remove first entry in array
+		}
+	}
+	parsedQuestion["options"] = options;
+	console.log("parsed result:");
+	console.log(parsedQuestion);
+	return parsedQuestion;
+}
+
+/**
+* TODO: document this
+*/ 
+function updateLeaderboard() {
+	var usernameScoreMap = {};
+	var tempArr = [];
+	for (var username in userAnswers) {
+		tempArr.push(calculateUserScoreObj(username)); // get the user's score object (percent, session and total correct)
+	}
+	tempArr.sort(function(a, b) { 
+		// sort by sessionScore descending
+    		return b.sessionScore - a.sessionScore;
+	});
+	// add rank property
+	var previousScore = 0;
+	for (var i = 0; i < tempArr.length; i++) {
+		if (tempArr[i].sessionScore == previousScore) { // tie, use previous iterator for rank
+			tempArr[i]["rank"] = i;
+		}
+		else {
+			tempArr[i]["rank"] = i+1;
+		}
+		previousScore = tempArr[i].sessionScore;
+	}
+	leaderBoard = tempArr;
+}
+
+function getUserScore(username) {
+	for (var i = 0; i < leaderBoard.length; i++) {
+		var userScoreObj = leaderBoard[i];
+		if (userScoreObj.username == username) {
+			return userScoreObj;
+		}
+	}
+}
+
+/**
+* TODO: docs
+*/
+function calculateUserScoreObj(username) {
+	var percentCorrect = 0;
+        var sessionScore = 0;
+	var totalCorrectAnswers = 0;
+	var userScoreObj = {
+		"username": username,
+		"percentCorrect": percentCorrect,
+		"sessionScore": sessionScore,
+		"totalCorrectAnswers": totalCorrectAnswers
+	} 
+	var thisUserAnswers = userAnswers[username];       
+	if (thisUserAnswers === undefined || thisUserAnswers === null) {
+		return userScoreObj; // returns 0s as default
+	}
+	else {
+		// calculate score
+		var totalCountedAnswers = 0;
+		for (var answer in thisUserAnswers) {
+			console.log(answer + ": " + thisUserAnswers[answer]);
+			// go get answer from modAnswers map
+			var matchingModAnswer = answersMap[answer];
+			if (matchingModAnswer !== undefined && matchingModAnswer !== null) {
+				// found matching mod answer, check values
+				if (thisUserAnswers[answer] == matchingModAnswer) {
+					totalCorrectAnswers++;
+					sessionScore = sessionScore + 5;
+				}
+				else {
+					sessionScore = sessionScore - 3;
+				}
+				totalCountedAnswers++;
+			}
+		}
+		if (totalCountedAnswers !== 0) {
+			percentCorrect = Math.round(totalCorrectAnswers / totalCountedAnswers * 100);
+		}
+		//responseMsg = username + "'s score is: " + percentCorrect + "% with " + totalCorrectAnswers + " correct answers!";
+		userScoreObj["percentCorrect"] = percentCorrect;
+		userScoreObj["sessionScore"] = sessionScore;
+		userScoreObj["totalCorrectAnswers"] = totalCorrectAnswers;
+	}
+	console.log("calculated score for username: " + username);
+	console.log(userScoreObj);
+	return userScoreObj;
 }
 
 client.on('chat', function(channel, user, message, self) {
@@ -68,20 +208,25 @@ client.on('chat', function(channel, user, message, self) {
         if ((user['mod'] || username === channelName) && message.startsWith("!answer")) {
 		// TODO: send message to client websocket to show answer
 
-		// answer current question
+		var currentAnswer = currentParsedQuestion["answer"];
                 var currentAnswersMapSize = Object.keys(answersMap).length + 1;
-                answersMap[currentAnswersMapSize] = modAnswer;
-                console.log("Mod " + username + " answered the question with answer: '" + modAnswer + "'. Saving as answer key: " + currentAnswersMapSize);
+                answersMap[currentAnswersMapSize] = currentAnswer;
+                console.log("Answered the question with answer: '" + currentAnswer + "'. Saving as answer key: " + currentAnswersMapSize);
+		updateLeaderboard();
         }
 	/* ###########################
          *     !next
          * ########################### */
 	else if ((user['mod'] || username === channelName) && message.startsWith("!next")) {
-                // parse answer submitted by mods
-                var modAnswer = message.substring(8, message.length);
-                var currentAnswersMapSize = Object.keys(answersMap).length + 1;
-                answersMap[currentAnswersMapSize] = modAnswer;
-                console.log("Mod " + username + " answered the question with answer: '" + modAnswer + "'. Saving as answer key: " + currentAnswersMapSize);
+		if (currentQuestionIndex !== 0 || Object.keys(currentParsedQuestion).length > 1) {
+			// don't incremement first time through
+			currentQuestionIndex = currentQuestionIndex + 1;
+		}
+		// TODO push new question to screen
+		currentParsedQuestion = parseQuestion(questions[currentQuestionIndex]);
+
+
+
         }
 	/* ###########################
 	 *     !guess
@@ -89,7 +234,7 @@ client.on('chat', function(channel, user, message, self) {
         else if (message.startsWith("!guess ")) {
                 // parse guess/answer
                 var userGuessUnparsed = message.substring(7, message.length);
-		var userGuess = userGuessUnparse.toLowerCase(); // make everything lowercase for final grading/scoring
+		var userGuess = userGuessUnparsed.toLowerCase(); // make everything lowercase for final grading/scoring
                 var currentAnswersMapSize = Object.keys(answersMap).length + 1;
                 // this is wrong, need to make a nested object for each user and check it
 
@@ -109,35 +254,8 @@ client.on('chat', function(channel, user, message, self) {
          *      !score
          * ########################### */
         else if (message.startsWith("!score")) {
-                var percentCorrect = 0;
-                var sessionScore = 0;
-                var thisUserAnswers = userAnswers[username];
-                var responseMsg = "default";
-                if (thisUserAnswers === undefined || thisUserAnswers === null) {
-                        responseMsg = username + " has not answered any questions yet.";
-                }
-                else {
-                        // calculate score
-                        // TODO: move this to shared method
-			var totalCountedAnswers = 0;
-                        var totalCorrectAnswers = 0;
-                        for (var answer in thisUserAnswers) {
-                                console.log(answer + ": " + thisUserAnswers[answer]);
-                                // go get answer from modAnswers map
-                                var matchingModAnswer = answersMap[answer];
-                                if (matchingModAnswer !== undefined && matchingModAnswer !== null) {
-                                        // found matching mod answer, check values
-                                        if (thisUserAnswers[answer] == matchingModAnswer) {
-                                                totalCorrectAnswers++;
-                                        }
-                                        totalCountedAnswers++;
-                                }
-                        }
-                        if (totalCountedAnswers !== 0) {
-                                percentCorrect = Math.round(totalCorrectAnswers / totalCountedAnswers * 100);
-                        }
-                        responseMsg = username + "'s score is: " + percentCorrect + "% with " + totalCorrectAnswers + " correct answers!";
-                }
+		var userScoreObj = getUserScore(username);
+		var responseMsg = username + " is rank #" + userScoreObj.rank + " with a game score of " + userScoreObj.sessionScore + ". (" + userScoreObj.totalCorrectAnswers + " correct answers - [" + userScoreObj.percentCorrect + "%])";
                 client.action(channelName, responseMsg);
         }
 	/* ###########################
@@ -160,6 +278,25 @@ client.on('chat', function(channel, user, message, self) {
 			gameStarted = true;
 			populateQuestions();
 		}
+	}
+	else if (username === channelName && message.startsWith("!testguess")) {
+                //var userGuess = userGuessUnparsed.toLowerCase(); // make everything lowercase for final grading/scoring
+		var userGuess = 'a';
+                var currentAnswersMapSize = Object.keys(answersMap).length + 1;
+                // this is wrong, need to make a nested object for each user and check it
+
+                // check if user has an answer map yet
+		username = 'testUserA';
+                var thisUserAnswers = userAnswers[username];
+                if (thisUserAnswers === undefined || thisUserAnswers === null) {
+                        // create this user's answer map
+                        userAnswers[username] = {};
+                        userAnswers[username][currentAnswersMapSize] = userGuess;
+                }
+                else {
+                        // user already has answer map, just push in answer
+                        thisUserAnswers[currentAnswersMapSize] = userGuess;
+                }
 	}
 
 });
