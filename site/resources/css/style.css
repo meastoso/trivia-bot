@@ -1,0 +1,18 @@
+/* custom styles for leaderboard widget */
+
+body {
+	font-family: 'Abril Fatface' !important;
+}
+
+#leaderBoard {
+	width: 620px;
+}
+
+#leaderBoard td {
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left: 20px;
+	padding-right: 0px;
+	font-size: 20pt;
+	font-weight: bold;
+}
