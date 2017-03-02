@@ -16,6 +16,13 @@
 	</header>
 	<body>
 		<div id='leaderBoard'></div>
+		<div class='question-wrapper'>
+			<div class='question'>THISISTESTQUESTION</div>
+			<div class='option option-a'>a) <span>TANSWERA</span></div>
+			<div class='option option-b'>b) <span>TANSWERB</span></div>
+			<div class='option option-c'>c) <span>TANSWERC</span></div>
+			<div class='option option-d'>d) <span>TANSWERD</span></div>
+		</div>
 
 
 <script>
@@ -30,14 +37,110 @@
 		scrollable: false,
 		columns: [
 			{ field: "rank", title: "Rank", width: '70px' },
-			{ field: "name", title: "Name" },
-			{ field: "score", title: "Score", width: '150px', template: "<div class='score'>#:score# <span>(#:percentCorrect#%)</span></div>" }
+			{ field: "username", title: "Name" },
+			{ field: "sessionScore", title: "Score", width: '150px', template: "<div class='score'>#:sessionScore# <span>(#:percentCorrect#%)</span></div>" }
 			]
             });
         });
 
+function showAnswerThenShowLeaderboard(answer) {
+	$('#leaderBoard').data('kendoGrid').dataSource.read();
+	$('#leaderBoard').data('kendoGrid').refresh();
 
 
+	$(".option").each(function() {
+		if (!$(this).hasClass("option-" + answer)) {
+			$(this).fadeOut();
+		}
+	});
+
+	setTimeout(function() {
+		$(".question-wrapper").slideUp(1000);
+		$(".option").hide();
+	}, 5000); 
+
+
+
+}
+
+/**
+* { 
+                difficulty: diff,
+                question: ques,
+                answer: ans,
+                options: {
+                        a: optionA,
+                        b: optionB,
+                        c: optionC,
+                        d: optionD
+                }
+        }
+*/
+function showQuestion(question) {
+	// update question pieces
+	$(".question").html(question.question);
+	$(".option-a > span").html(question.options.a);
+	$(".option-b > span").html(question.options.b);
+	$(".option-c > span").html(question.options.c);
+	$(".option-d > span").html(question.options.d);
+
+	// animate the question divs
+	$(".question-wrapper").slideDown(3000, function() {
+		// once question is finished sliding down, start showing options
+		$(".option-a").slideDown(1000, function() {
+			$(".option-b").slideDown(1000, function() {
+        			$(".option-c").slideDown(1000, function() {
+                        		$(".option-d").slideDown(1000, function() {
+                        
+			                });
+                		});                
+	                });
+		});
+	});
+}
+
+
+
+$(function () {
+    // if user is running mozilla then use it's built-in WebSocket
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+    var connection = new WebSocket('ws://127.0.0.1:1337');
+
+    connection.onopen = function () {
+        // connection is opened and ready to use
+	console.log("connection is open and ready to use for websockets");
+    };
+
+    connection.onerror = function (error) {
+        // an error occurred when sending/receiving data
+	console.log("error occurred setting up connection: " + error);
+    };
+
+    connection.onmessage = function (message) {
+        // try to decode json (I assume that each message from server is json)
+        try {
+            var json = JSON.parse(message.data);
+		console.log("got the json, object is:");
+		console.log(json);
+		if (json.type == "answer") {
+			console.log("found answer object, showing answer!");
+			showAnswerThenShowLeaderboard(json.data);
+		}
+		else if (json.type == "question") {
+			console.log("found new question object, showing new question");
+			showQuestion(json.data);
+		}
+		else {
+			console.log("[ERROR] unexpected message type: " + json.type);
+		}
+        } catch (e) {
+            console.log('This doesn\'t look like a valid JSON: ', message.data);
+            return;
+        }
+        // handle incoming message
+    };
+});
 
 
 

@@ -11,6 +11,40 @@ var currentParsedQuestion = {};
 var currentQuestionIndex = 0; // used to track the index of the current question from questions array
 var leaderBoard = [];
 
+var WebSocketServer = require('websocket').server;
+var http = require('http');
+
+var server = http.createServer(function(request, response) {
+    // process HTTP request. Since we're writing just WebSockets server
+    // we don't have to implement anything.
+});
+server.listen(1337, function() { });
+
+// create the server
+wsServer = new WebSocketServer({
+    httpServer: server
+});
+
+var connection;
+// WebSocket server
+wsServer.on('request', function(request) {
+    //var connection = request.accept(null, request.origin);
+    connection = request.accept(null, request.origin);
+
+    // This is the most important callback for us, we'll handle
+    // all messages from users here.
+    connection.on('message', function(message) {
+        if (message.type === 'utf8') {
+            // process WebSocket message
+        }
+    });
+
+    connection.on('close', function(connection) {
+        // close user connection
+    });
+});
+
+
 var options = {
         options: {
                 debug: true
@@ -36,7 +70,7 @@ app.listen(3000, function () {
 app.use(express.static('site'));
 
 app.get('/getLeaderboard', function (req, res) {
-	/*var test = [
+	/*leaderBoard = [
 		{ 'rank': 1, 'name': 'aprilk', 'score': '124', 'percentCorrect': '80' },
 		{ 'rank': 2, 'name': 'lanz', 'score': '123', 'percentCorrect': '75' },
 		{ 'rank': 3, 'name': 'zaes', 'score': '122', 'percentCorrect': '70' },
@@ -55,7 +89,7 @@ client.on('connected', function(address, port) {
 */
 function populateQuestions() {
 	var request = require('request');
-	request('https://opentdb.com/api.php?amount=30&category=15&type=multiple', function (error, response, data) {
+	request('https://opentdb.com/api.php?amount=50&category=15&type=multiple', function (error, response, data) {
 		if (!error && response.statusCode == 200) {
 			var resp = JSON.parse(data);
 			if (resp["response_code"] != 0) {
@@ -199,6 +233,33 @@ function calculateUserScoreObj(username) {
 	return userScoreObj;
 }
 
+/**
+* TODO: document object type used here
+*/
+function sendClientMsg(msgObj) {
+	if (connection === undefined) {
+		console.log("[ERROR] OBS hasn't established browser source to create websocket!");
+		return;
+	}
+	connection.sendUTF(JSON.stringify(msgObj));
+}
+
+function sendAnswerToClient(answer) {
+	var answerMsgObj = {
+		"type": "answer",
+		"data": answer
+	};
+	sendClientMsg(answerMsgObj);
+}
+
+function sendNextQuestionToClient(question) {
+	var questionMsgObj = {
+		"type": "question",
+		"data": question
+	};
+	sendClientMsg(questionMsgObj);
+}
+
 client.on('chat', function(channel, user, message, self) {
 	if (self) return;
 	var username = user['username'];
@@ -213,6 +274,7 @@ client.on('chat', function(channel, user, message, self) {
                 answersMap[currentAnswersMapSize] = currentAnswer;
                 console.log("Answered the question with answer: '" + currentAnswer + "'. Saving as answer key: " + currentAnswersMapSize);
 		updateLeaderboard();
+		sendAnswerToClient(currentAnswer);
         }
 	/* ###########################
          *     !next
@@ -224,9 +286,7 @@ client.on('chat', function(channel, user, message, self) {
 		}
 		// TODO push new question to screen
 		currentParsedQuestion = parseQuestion(questions[currentQuestionIndex]);
-
-
-
+		sendNextQuestionToClient(currentParsedQuestion);
         }
 	/* ###########################
 	 *     !guess
@@ -297,6 +357,10 @@ client.on('chat', function(channel, user, message, self) {
                         // user already has answer map, just push in answer
                         thisUserAnswers[currentAnswersMapSize] = userGuess;
                 }
+	}
+	else if (message.startsWith("!conn")) {
+		connection.sendUTF(JSON.stringify( { type: 'history', data: "whocares this is a test"} ));
+
 	}
 
 });
