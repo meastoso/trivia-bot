@@ -86,10 +86,16 @@ client.on('connected', function(address, port) {
 
 /**
 * TODO: document method
+* 	Categories (ID):
+	Video Games - 15
+	TV - 14
+	Music - 12
+	Movies - 11
+	General Knowledge - 8
 */
 function populateQuestions() {
 	var request = require('request');
-	request('https://opentdb.com/api.php?amount=50&category=15&type=multiple', function (error, response, data) {
+	request('https://opentdb.com/api.php?amount=10&category=15&difficulty=easy&type=multiple', function (error, response, data) {
 		if (!error && response.statusCode == 200) {
 			var resp = JSON.parse(data);
 			if (resp["response_code"] != 0) {
@@ -101,7 +107,69 @@ function populateQuestions() {
 		else {
 			console.log("[ERROR] failed to get questions from opentdb: " + error);
 		}
+		// now go fetch additional questions of a different category
+		request('https://opentdb.com/api.php?amount=10&category=14&difficulty=easy&type=multiple', function (error, response, data) {
+			if (!error && response.statusCode == 200) {
+	                        var resp = JSON.parse(data);
+	                        if (resp["response_code"] != 0) {
+	                                console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
+	                                return;
+	                        }
+	                }
+	                else {
+	                        console.log("[ERROR] failed to get questions from opentdb: " + error);
+	                }
+			var theseQuestions = resp["results"];
+			for (var i = 0; i < theseQuestions.length; i++) {
+				pushRandom(questions, theseQuestions[i]);
+			}
+			// now go fetch additional questions of a different category
+	                request('https://opentdb.com/api.php?amount=10&category=12&difficulty=easy&type=multiple', function (error, response, data) {
+	                        if (!error && response.statusCode == 200) {
+	                                var resp = JSON.parse(data);
+	                                if (resp["response_code"] != 0) {
+	                                        console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
+	                                        return;
+	                                }
+	                        }
+	                        else {
+	                                console.log("[ERROR] failed to get questions from opentdb: " + error);
+	                        }
+	                        var theseQuestions = resp["results"];
+	                        for (var i = 0; i < theseQuestions.length; i++) {
+	                                pushRandom(questions, theseQuestions[i]);
+	                        }
+				// now go fetch additional questions of a different category
+	                        request('https://opentdb.com/api.php?amount=10&category=11&difficulty=easy&type=multiple', function (error, response, data) {
+	                                if (!error && response.statusCode == 200) {
+	                                        var resp = JSON.parse(data);
+	                                        if (resp["response_code"] != 0) {
+	                                                console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
+	                                                return;
+	                                        }
+	                                }
+	                                else {
+	                                        console.log("[ERROR] failed to get questions from opentdb: " + error);
+	                                }
+	                                var theseQuestions = resp["results"];
+	                                for (var i = 0; i < theseQuestions.length; i++) {
+	                                        pushRandom(questions, theseQuestions[i]);
+	                                }
+	                        });
+	                });
+		});
+
 	});
+}
+
+/**
+* TODO: documentation
+*/
+function pushRandom(pushToArray, questionObj) {
+	var max = pushToArray.length - 1;
+	var min = 0;
+	var randIndex = Math.random() * (max - min) + min;
+	pushToArray.splice(randIndex, 0, questionObj);
 }
 
 /**
@@ -120,8 +188,6 @@ function populateQuestions() {
 	}
 */
 function parseQuestion(question) {
-	console.log("Parsing question, original:");
-	console.log(question);
 	var parsedQuestion = {
 		"difficulty": question["difficulty"],
 		"question": question["question"]
@@ -143,7 +209,6 @@ function parseQuestion(question) {
 		}
 	}
 	parsedQuestion["options"] = options;
-	console.log("parsed result:");
 	console.log(parsedQuestion);
 	return parsedQuestion;
 }
@@ -162,15 +227,17 @@ function updateLeaderboard() {
     		return b.sessionScore - a.sessionScore;
 	});
 	// add rank property
-	var previousScore = 0;
+	var previousScore = -1;
+	var previousRank = -1;
 	for (var i = 0; i < tempArr.length; i++) {
 		if (tempArr[i].sessionScore == previousScore) { // tie, use previous iterator for rank
-			tempArr[i]["rank"] = i;
+			tempArr[i]["rank"] = previousRank;
 		}
 		else {
 			tempArr[i]["rank"] = i+1;
 		}
 		previousScore = tempArr[i].sessionScore;
+		previousRank = tempArr[i].rank;
 	}
 	leaderBoard = tempArr;
 }
@@ -205,17 +272,16 @@ function calculateUserScoreObj(username) {
 		// calculate score
 		var totalCountedAnswers = 0;
 		for (var answer in thisUserAnswers) {
-			console.log(answer + ": " + thisUserAnswers[answer]);
 			// go get answer from modAnswers map
 			var matchingModAnswer = answersMap[answer];
 			if (matchingModAnswer !== undefined && matchingModAnswer !== null) {
 				// found matching mod answer, check values
 				if (thisUserAnswers[answer] == matchingModAnswer) {
 					totalCorrectAnswers++;
-					sessionScore = sessionScore + 5;
+					sessionScore = sessionScore + 3;
 				}
 				else {
-					sessionScore = sessionScore - 3;
+					sessionScore = sessionScore - 0;
 				}
 				totalCountedAnswers++;
 			}
@@ -223,14 +289,42 @@ function calculateUserScoreObj(username) {
 		if (totalCountedAnswers !== 0) {
 			percentCorrect = Math.round(totalCorrectAnswers / totalCountedAnswers * 100);
 		}
-		//responseMsg = username + "'s score is: " + percentCorrect + "% with " + totalCorrectAnswers + " correct answers!";
+		sessionScore = sessionScore - getDecayValue(username);
 		userScoreObj["percentCorrect"] = percentCorrect;
 		userScoreObj["sessionScore"] = sessionScore;
 		userScoreObj["totalCorrectAnswers"] = totalCorrectAnswers;
 	}
-	console.log("calculated score for username: " + username);
-	console.log(userScoreObj);
 	return userScoreObj;
+}
+
+/**
+* TODO: documentation
+* @return int
+*/
+function getDecayValue(username) {
+	// 1. find smallest key value as starting point
+	// 2. use smallest key value, loop through master answer key map starting at that index
+	// 3. for each master answer, check if answer exists in user's answer. if not, user didn't answer decay -1
+	var decayValue = 0;
+	var thisUserAnswers = userAnswers[username]; // guaranteed not null 
+	if (thisUserAnswers === undefined || thisUserAnswers === null) {
+		return 0;
+        }
+	var firstAnswer = 100; // arbitrary large number
+	for (var answerKey in thisUserAnswers) {
+		if (answerKey < firstAnswer) {
+			firstAnswer = parseInt(answerKey);
+		}
+	}
+	// use smallest key value, loop through master answer key map starting at that index
+	for (var masterAnswerKey in answersMap) {
+		if (masterAnswerKey >= firstAnswer && thisUserAnswers[masterAnswerKey] === undefined) {
+			// found a question the user didn't answer, add (1) to decay value returned
+			decayValue = decayValue + 1;
+		}
+	}
+
+	return decayValue;
 }
 
 /**
@@ -258,6 +352,21 @@ function sendNextQuestionToClient(question) {
 		"data": question
 	};
 	sendClientMsg(questionMsgObj);
+}
+
+function enterUserGuess(username, userGuess) {
+                var currentAnswersMapSize = Object.keys(answersMap).length + 1;
+                // check if user has an answer map yet
+                var thisUserAnswers = userAnswers[username];
+                if (thisUserAnswers === undefined || thisUserAnswers === null) {
+                        // create this user's answer map
+                        userAnswers[username] = {};
+                        userAnswers[username][currentAnswersMapSize] = userGuess;
+                }
+                else {
+                        // user already has answer map, just push in answer
+                        thisUserAnswers[currentAnswersMapSize] = userGuess;
+                }
 }
 
 client.on('chat', function(channel, user, message, self) {
@@ -340,23 +449,10 @@ client.on('chat', function(channel, user, message, self) {
 		}
 	}
 	else if (username === channelName && message.startsWith("!testguess")) {
-                //var userGuess = userGuessUnparsed.toLowerCase(); // make everything lowercase for final grading/scoring
-		var userGuess = 'a';
-                var currentAnswersMapSize = Object.keys(answersMap).length + 1;
-                // this is wrong, need to make a nested object for each user and check it
-
-                // check if user has an answer map yet
-		username = 'testUserA';
-                var thisUserAnswers = userAnswers[username];
-                if (thisUserAnswers === undefined || thisUserAnswers === null) {
-                        // create this user's answer map
-                        userAnswers[username] = {};
-                        userAnswers[username][currentAnswersMapSize] = userGuess;
-                }
-                else {
-                        // user already has answer map, just push in answer
-                        thisUserAnswers[currentAnswersMapSize] = userGuess;
-                }
+		enterUserGuess("testGuessA", "a");
+		enterUserGuess("testGuessB", "b");
+		enterUserGuess("testGuessC", "c");
+		enterUserGuess("testGuessD", "d");
 	}
 	else if (message.startsWith("!conn")) {
 		connection.sendUTF(JSON.stringify( { type: 'history', data: "whocares this is a test"} ));
