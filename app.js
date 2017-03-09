@@ -371,6 +371,7 @@ function enterUserGuess(username, userGuess) {
 
 client.on('chat', function(channel, user, message, self) {
 	if (self) return;
+	try {
 	var username = user['username'];
 	/* ###########################
 	 *     !answer
@@ -424,7 +425,11 @@ client.on('chat', function(channel, user, message, self) {
          * ########################### */
         else if (message.startsWith("!score")) {
 		var userScoreObj = getUserScore(username);
-		var responseMsg = username + " is rank #" + userScoreObj.rank + " with a game score of " + userScoreObj.sessionScore + ". (" + userScoreObj.totalCorrectAnswers + " correct answers - [" + userScoreObj.percentCorrect + "%])";
+		//var responseMsg = username + " is rank #" + userScoreObj.rank + " with a game score of " + userScoreObj.sessionScore + ". (" + userScoreObj.totalCorrectAnswers + " correct answers - [" + userScoreObj.percentCorrect + "%])";
+		var responseMsg = username + " has not answered any questions yet!";
+		if (userScoreObj !== undefined && Object.keys(userScoreObj).length > 0) {
+			responseMsg = username + " is rank #" + userScoreObj.rank + " with a game score of " + userScoreObj.sessionScore + ". (" + userScoreObj.totalCorrectAnswers + " correct answers - [" + userScoreObj.percentCorrect + "%])";
+		}
                 client.action(channelName, responseMsg);
         }
 	/* ###########################
@@ -457,6 +462,10 @@ client.on('chat', function(channel, user, message, self) {
 	else if (message.startsWith("!conn")) {
 		connection.sendUTF(JSON.stringify( { type: 'history', data: "whocares this is a test"} ));
 
+	}
+	}
+	catch(error) {
+		console.log("CAUGHT ERROR: " + error);
 	}
 
 });
