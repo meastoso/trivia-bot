@@ -78,3 +78,16 @@ table tr:nth-child(4) {
 table tr:nth-child(5) {
         background: lightblue !important;
 }
+
+label.block-label {
+	margin-top: 10px;
+	display: block;
+}
+
+#question_form button {
+	display: block;
+	margin-top: 20px;
+	width: 100px;
+	background-color: blue;
+	color: white;
+}

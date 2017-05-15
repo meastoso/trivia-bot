@@ -1,0 +1,63 @@
+<html>
+	<header>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    		<link href='//fonts.googleapis.com/css?family=Roboto+Slab:400,700' rel='stylesheet'>
+		<link href="https://fonts.googleapis.com/css?family=Abril+Fatface" rel="stylesheet">
+		<link href="resources/css/kendo.common-material.min.css" rel="stylesheet" />
+		<link href="resources/css/kendo.rtl.min.css" rel="stylesheet" />
+		<link href="resources/css/kendo.material.min.css" rel="stylesheet" />
+		<link href="resources/css/kendo.material.mobile.min.css" rel="stylesheet" />
+		<link href="resources/css/style.css" rel="stylesheet" />
+		<script src="resources/js/jquery-1.12.3.min.js"></script>
+		<script src="resources/js/kendo.all.min.js"></script>
+		<title>Meastoso Trivia Leader Dashboard</title>
+	</header>
+	<body>
+
+	<form id="question_form">
+	<label class="block-label">Question:</label>
+	<textarea id="question" ></textarea>
+	<label class="block-label">Correct Answer:</label>
+	<input id="correct" />
+	<label class="block-label">Incorrect Answer #1:</label>
+	<input id="incorrect1" />
+	<label class="block-label">Incorrect Answer #2:</label>
+	<input id="incorrect2" />
+	<label class="block-label">Incorrect Answer #3:</label>
+	<input id="incorrect3" />
+	<button>Submit</button>
+	</form>
+
+<script>
+	$(document).ready(function () {
+            $("#leaderBoard").kendoGrid({
+                dataSource: {
+                    type: "jsonp",
+                    transport: {
+                        read: "http://localhost:3000/getLeaderboard"
+                    }
+                },
+		scrollable: false,
+		columns: [
+			{ field: "rank", title: "Rank", width: '70px' },
+			{ field: "username", title: "Name" },
+			{ field: "sessionScore", title: "Score", width: '150px', template: "<div class='score'>#:sessionScore# <span>(#:percentCorrect#%)</span></div>" }
+			]
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
