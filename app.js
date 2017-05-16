@@ -1,12 +1,15 @@
 var tmi = require('tmi.js');
 var express = require('express');
-var app = express();
-var channelName = "meastoso";
-
+var config = require('./config');
+var logger = require('./logger');
 var triviaEngine = require('./trivia/trivia.js');
 
-triviaEngine.testFunctionPub();
-
+var channelName = config.twitch.channelName;
+var username = config.twitch.botAccount.username;
+if (channelName == 'channelName' || username == 'username') {
+	logger.log("error", "Default settings found. Please configure your settings in the file 'config.js' found at the root of this application.");
+	process.exit(1);
+}
 var options = {
         options: {
                 debug: true
@@ -16,16 +19,18 @@ var options = {
                 reconnect: true
         },
         identity: {
-                username: "fatbearbot_trivia",
-                password: "oauth:cpoy739jnvgghlt4ol60l59kjtw9qu"
+                username: username,
+                password: config.twitch.botAccount.password
         },
         channels: [channelName]
 };
 
 var client = new tmi.client(options);
+logger.log("info", "Attempting to log into channel: " + channelName + " with username: " + config.twitch.botAccount.username);
 client.connect();
 
-app.listen(3000, function () {
+var app = express();
+app.listen(config.web.port, function () {
   //console.log('Bot webapp listening on port 3000!')
 });
 
