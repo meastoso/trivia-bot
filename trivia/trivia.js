@@ -1,6 +1,7 @@
 /**
- * http://usejsdoc.org/
+ * Trivia Module
  */
+var logger = require('../logger');
 var scores = {}; // map to hold peoples scores
 var userAnswers = {}; // used to hold answers each question
 var answersMap = {};
@@ -23,7 +24,6 @@ server.listen(1337, function() { });
 wsServer = new WebSocketServer({
     httpServer: server
 });
-
 var connection;
 // WebSocket server
 wsServer.on('request', function(request) {
@@ -48,7 +48,7 @@ wsServer.on('request', function(request) {
 */
 function sendClientMsg(msgObj) {
 	if (connection === undefined) {
-		console.log("[ERROR] OBS hasn't established browser source to create websocket!");
+		logger.log("error", "OBS hasn't been started or the browser source is not configured to load automatically. Unable to create websocket.");
 		return;
 	}
 	connection.sendUTF(JSON.stringify(msgObj));
@@ -77,10 +77,6 @@ function pushRandom(pushToArray, questionObj) {
 	pushToArray.splice(randIndex, 0, questionObj);
 }
 
-var testFunction = function() {
-	console.log("CALLED TEST FUNCTION!");
-}
-
 /**
 * TODO: document method
 * 	Categories (ID):
@@ -96,64 +92,64 @@ function populateQuestions() {
 		if (!error && response.statusCode == 200) {
 			var resp = JSON.parse(data);
 			if (resp["response_code"] != 0) {
-				console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
+				logger.log("error", "Failed to retrieve questions, response code: " + resp["response_code"]);
 				return;
 			}
 			questions = resp["results"]; // store question objects in scoped variable accessible by other methods
 		}
 		else {
-			console.log("[ERROR] failed to get questions from opentdb: " + error);
+			logger.log("error", "Failed to get questions from opentdb: " + error);
 		}
 		// now go fetch additional questions of a different category
 		request('https://opentdb.com/api.php?amount=10&category=14&difficulty=easy&type=multiple', function (error, response, data) {
 			if (!error && response.statusCode == 200) {
-	                        var resp = JSON.parse(data);
-	                        if (resp["response_code"] != 0) {
-	                                console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
-	                                return;
-	                        }
-	                }
-	                else {
-	                        console.log("[ERROR] failed to get questions from opentdb: " + error);
-	                }
+                var resp = JSON.parse(data);
+                if (resp["response_code"] != 0) {
+                        logger.log("error", "Failed to retrieve questions, response code: " + resp["response_code"]);
+                        return;
+                }
+            }
+            else {
+                    logger.log("error", "Failed to get questions from opentdb: " + error);
+            }
 			var theseQuestions = resp["results"];
 			for (var i = 0; i < theseQuestions.length; i++) {
 				pushRandom(questions, theseQuestions[i]);
 			}
 			// now go fetch additional questions of a different category
-	                request('https://opentdb.com/api.php?amount=10&category=12&difficulty=easy&type=multiple', function (error, response, data) {
-	                        if (!error && response.statusCode == 200) {
-	                                var resp = JSON.parse(data);
-	                                if (resp["response_code"] != 0) {
-	                                        console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
-	                                        return;
-	                                }
-	                        }
-	                        else {
-	                                console.log("[ERROR] failed to get questions from opentdb: " + error);
-	                        }
-	                        var theseQuestions = resp["results"];
-	                        for (var i = 0; i < theseQuestions.length; i++) {
-	                                pushRandom(questions, theseQuestions[i]);
-	                        }
-				// now go fetch additional questions of a different category
-	                        request('https://opentdb.com/api.php?amount=10&category=11&difficulty=easy&type=multiple', function (error, response, data) {
-	                                if (!error && response.statusCode == 200) {
-	                                        var resp = JSON.parse(data);
-	                                        if (resp["response_code"] != 0) {
-	                                                console.log("[ERROR] failed to retrieve questions, response code: " + resp["response_code"]);
-	                                                return;
-	                                        }
-	                                }
-	                                else {
-	                                        console.log("[ERROR] failed to get questions from opentdb: " + error);
-	                                }
-	                                var theseQuestions = resp["results"];
-	                                for (var i = 0; i < theseQuestions.length; i++) {
-	                                        pushRandom(questions, theseQuestions[i]);
-	                                }
-	                        });
-	                });
+            request('https://opentdb.com/api.php?amount=10&category=12&difficulty=easy&type=multiple', function (error, response, data) {
+                if (!error && response.statusCode == 200) {
+                    var resp = JSON.parse(data);
+                    if (resp["response_code"] != 0) {
+                        logger.log("error", "Failed to retrieve questions, response code: " + resp["response_code"]);
+                        return;
+                    }
+                }
+                else {
+                    logger.log("error", "Failed to get questions from opentdb: " + error);
+                }
+                var theseQuestions = resp["results"];
+                for (var i = 0; i < theseQuestions.length; i++) {
+                    pushRandom(questions, theseQuestions[i]);
+                }
+                // now go fetch additional questions of a different category
+                request('https://opentdb.com/api.php?amount=10&category=11&difficulty=easy&type=multiple', function (error, response, data) {
+                    if (!error && response.statusCode == 200) {
+                        var resp = JSON.parse(data);
+                        if (resp["response_code"] != 0) {
+                            logger.log("error", "Failed to retrieve questions, response code: " + resp["response_code"]);
+                            return;
+                        }
+                    }
+                    else {
+                        logger.log("error", "Failed to get questions from opentdb: " + error);
+                    }
+                    var theseQuestions = resp["results"];
+                    for (var i = 0; i < theseQuestions.length; i++) {
+                        pushRandom(questions, theseQuestions[i]);
+                    }
+                });
+            });
 		});
 
 	});
@@ -331,7 +327,6 @@ function enterUserGuess(username, userGuess) {
 
 // public methods from trivia module
 module.exports = {
-		testFunctionPub: testFunction,
 		getLeaderboard: function() {
 			return leaderBoard;
 		},
@@ -365,11 +360,11 @@ module.exports = {
 		getUserScore: getUserScore,
 		startGame: function() {
 			if (gameStarted) {
-				console.log("already started game!");
+				logger.log("error", "Trivia game has already been started.");
 			}
 			else {
 				// START THE TRIVIA GAME!!
-				console.log("STARTING TRIVIA!");
+				logger.log("info", "Starting Trivia Game...");
 				gameStarted = true;
 				populateQuestions();
 			}
