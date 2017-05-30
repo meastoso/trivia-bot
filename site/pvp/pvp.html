@@ -1,0 +1,28 @@
+<html>
+	<header>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+		<link href="/pvp/pvp.css" rel="stylesheet">
+		<script src="../resources/js/jquery-1.12.3.min.js"></script>
+		<title>Meastoso PVP Winners</title>
+	</header>
+	<body>
+		<div id="wrapperID" style="display: none;">
+			<div class='movie'>Spoils to the Victors</div>
+			
+			<div class='job'>1.35 seconds</div>
+			<div class='name'>mizzteq</div>
+			<div class='job'>2.54 seconds</div>
+			<div class='name'>meastoso</div>
+		</div>
+		<button id="testButton">Testing</button>
+	</body>
+	<script>
+		$("#testButton").on("click", function() {
+			//$("#wrapperID").removeClass("wrapper");
+			$("#wrapperID").toggleClass("wrapper");
+			$("#wrapperID").toggle();
+		});
+	</script>
+</html>

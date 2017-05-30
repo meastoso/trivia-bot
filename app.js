@@ -3,6 +3,8 @@ var express = require('express');
 var config = require('./config');
 var logger = require('./logger');
 var triviaEngine = require('./trivia/trivia.js');
+var pvpEngine = require('./pvp/pvp.js');
+var chatOverlay = require('./chat_overlay/chat_overlay.js');
 
 var channelName = config.twitch.channelName;
 var username = config.twitch.botAccount.username;
