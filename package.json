@@ -2,7 +2,7 @@
   "name": "Trivia-Bot",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "chat_overlay/chat_overlay.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +11,7 @@
   "dependencies": {
     "tmi.js": "^1.1.2",
     "express": "^4.14.1",
-    "websocket": "^1.0.24"
+    "websocket": "^1.0.24",
+    "electron": "^1.6.10"
   }
 }

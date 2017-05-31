@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <header>
+    <meta charset="UTF-8">
+    <title>GAY BEARS ARE THE BESTEST!</title>
+    <link href="chat_overlay.css" rel="stylesheet" />
+    <!-- Insert this line above script imports  -->
+	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script language="JavaScript" type="text/javascript" src="../site/resources/js/jquery-1.12.3.min.js"></script>
+    <!-- Insert this line after script imports -->
+	<script>if (window.module) module = window.module;</script>
+  </header>
+  <body>
+	<div id="mainContainer">
+		<div class="messageContainer">
+			<span class="username">Radxen</span><span class="message">spoiler alert, i'm actuallty gay you dumb twinks</span>
+		</div>
+		
+	
+	
+	</div>
+	<script>
+	function pushNewMessage(username, message) {
+		console.log("username: " + username + "   message: " + message);
+		var usernameSpan = $("<span class='username'>" + username + "</span>");
+		var messageSpan = $("<span class='message'>" + message + "</span>");
+		var newMessageDiv = $("<div class='messageContainer'></div>");
+		newMessageDiv.append(usernameSpan).append(messageSpan);
+		$("#mainContainer").append(newMessageDiv);
+	}
+	
+	$(function () {
+		    // if user is running mozilla then use it's built-in WebSocket
+		    window.WebSocket = window.WebSocket || window.MozWebSocket;
+	
+		    var connection = new WebSocket('ws://127.0.0.1:1338');
+	
+		    connection.onopen = function () {
+		        // connection is opened and ready to use
+			console.log("connection is open and ready to use for websockets");
+		    };
+	
+		    connection.onerror = function (error) {
+		        // an error occurred when sending/receiving data
+			console.log("error occurred setting up connection: " + error);
+		    };
+	
+		    connection.onmessage = function (message) {
+		        // try to decode json (I assume that each message from server is json)
+		        try {
+		            var json = JSON.parse(message.data);
+					console.log("got the json, object is:");
+					console.log(json);
+					
+					pushNewMessage(json.username.username, json.msg);
+					
+					
+					
+					
+		        } catch (e) {
+		        	console.log(e);
+		            console.log('This doesn\'t look like a valid JSON: ', message.data);
+		            return;
+		        }
+		        // handle incoming message
+		    };
+		});
+  
+  
+  	</script>
+  </body>
+</html>
