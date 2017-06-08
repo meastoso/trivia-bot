@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <header>
+    <meta charset="UTF-8">
+    <title>GAY BEARS ARE THE BESTEST!</title>
+    <link href="chat_overlay.css" rel="stylesheet" />
+    <!-- Insert this line above script imports  -->
+	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script language="JavaScript" type="text/javascript" src="../site/resources/js/jquery-1.12.3.min.js"></script>
+    <!-- Insert this line after script imports -->
+	<script>if (window.module) module = window.module;</script>
+  </header>
+  <body>
+	<div id="mainContainer">
+		<div class="messageContainer">
+			<span class="username">Radxen</span><span class="message">spoiler alert, i'm actuallty gay you dumb twinks</span>
+		</div>
+		
+	
+	
+	</div>
+  </body>
+</html>

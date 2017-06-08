@@ -377,5 +377,18 @@ module.exports = {
 			enterUserGuess("testGuessB", "b");
 			enterUserGuess("testGuessC", "c");
 			enterUserGuess("testGuessD", "d");
+		},
+		addExpressEndpoints: function(express, expressApp) {
+			expressApp.use("/trivia", express.static('site'));
+			expressApp.get('/getLeaderboard', function (req, res) {
+				/*leaderBoard = [
+					{ 'rank': 1, 'name': 'aprilk', 'score': '124', 'percentCorrect': '80' },
+					{ 'rank': 2, 'name': 'lanz', 'score': '123', 'percentCorrect': '75' },
+					{ 'rank': 3, 'name': 'zaes', 'score': '122', 'percentCorrect': '70' },
+					{ 'rank': 4, 'name': '1234567890123456789012345', 'score': '121', 'percentCorrect': '60' },
+					{ 'rank': 5, 'name': 'meast', 'score': '120', 'percentCorrect': '50' }
+				];*/
+				res.send(leaderBoard);
+			});
 		}
 };

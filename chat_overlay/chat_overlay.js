@@ -7,6 +7,7 @@
 var twitchApp = require('../twitch/twitch.js');
 var config = require('../config');
 var logger = require('../logger');
+var chatParser = require('./chat_parser.js');
 
 var channelName = config.twitch.channelName;
 
@@ -41,6 +42,22 @@ wsServer.on('request', function(request) {
         // close user connection
     });
 });
+
+/*********************************
+*   MAIN EXPRESS CODE HERE
+* 
+*   NOTE: Add "addExpressEndpoints()" 
+*         to modules as necessary
+*********************************/
+var express = require('express');
+var expressApp = express();
+expressApp.listen(config.web.port, function () {
+  //console.log('Bot webapp listening on port 3000!')
+});
+twitchApp.addExpressEndpoints(express, expressApp);
+chatParser.addExpressEndpoints(express, expressApp);
+
+
 
 /**
 * TODO: document object type used here
@@ -143,10 +160,13 @@ client.on('chat', function(channel, user, message, self) {
 	try {
 		var username = user['username'];
 		var msgObj = {
-				'username': user,
-				'msg': message
+				'user': user,
+				'message': message
 		}
-		sendClientMsg(msgObj);
+		// pass the message through the filter method
+		if (chatParser.isMsgImportant(msgObj)) {
+			sendClientMsg(msgObj);
+		}
 		/* ###########################
 		 *     !answer
 		 * ########################### */
