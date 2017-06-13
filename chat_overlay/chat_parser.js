@@ -2,9 +2,7 @@
  * Engine used to parse chat messages
  */
 var chatOverlayDAO = require('./chat_overlay_DAO.js');
-
-
-
+var chatOverlayConfig = chatOverlayDAO.getConfig();
 
 /**
  * Boolean function which will return true/false based

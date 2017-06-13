@@ -88,14 +88,90 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 text-center">
-                    <h2>Config</h2>
+                    <h2>Configuration</h2>
                     <hr class="star-primary">
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-8 col-lg-offset-2">
-                    <form name="updateConfig" id="form_updateConfig" novalidate>
-                        <div class="row control-group">
+                <div class="col-lg-10 col-lg-offset-1">
+                    <form name="updateConfig" id="form_updateConfig" >
+                    	<div class="row">
+                    		<div class="col-xs-6 form-group-wrapper">
+                    			<h4>Chat Window Properties</h4>
+                    			<p>These values are used when creating the chat overlay window. When updated, the overlay window will be adjusted accordingly.</p>
+                    			<!-- 
+                    			/* Chat Overlay Config Defaults */
+	config.overlaywindow = {};
+	config.overlaywindow.x = 220;
+	config.overlaywindow.y = 0;
+	config.overlaywindow.width = 350;
+	config.overlaywindow.height = 200;
+	config.overlaywindow.transparent = false; // TODO; change back after debugging
+	config.overlaywindow.alwaysOnTop = false; // TODO; change back after debugging
+	config.overlaywindow.frame = false;
+	// TODO: let users customize chat message properties, i.e. color, size, font, etc.
+	
+	/* Define filters sub-category of config */
+	config.filters = {};
+	
+	/* User-related filters */
+	config.filters.user = {};
+	config.filters.user.totalMessagesThreshold = "1"; // "users with less than 'x' total messages"
+	config.filters.user.totalBitsDonatedThreshold = "5000"; // show messages from users who have donated more than $50 in bits
+	
+	/* Regex-related */
+	config.filters.regex = {};
+	config.filters.regex.whitelistUser = ["meastoso"]; // whitelist of users who's messages will always be shown in the app
+	config.filters.regex.whitelistPhrases = ["@meastoso", "hi"]; // for now just "contains" the string will match, but eventually we can customize the matcher, i.e. "endsWith()"
+	
+                    			 -->
+                    			
+                   				<div class="form-group floating-label-form-group controls form-group-custom">
+	                           		<label for="name">Height</label>
+	                               	<input type="number" class="form-control" placeholder="Height" id="height" required data-validation-required-message="Please enter a height.">
+	                               	<p class="help-block text-danger"></p>
+	                            </div>
+	                            <div class="form-group floating-label-form-group controls form-group-custom">
+	                           		<label for="name">Width</label>
+	                               	<input type="number" class="form-control" placeholder="Width" id="width" required data-validation-required-message="Please enter a width">
+	                               	<p class="help-block text-danger"></p>
+	                            </div>
+	                            <div class="form-group floating-label-form-group controls form-group-custom">
+	                           		<label for="name">X-Coordinate</label>
+	                               	<input type="number" class="form-control" placeholder="X-Coordinate" id="x" required data-validation-required-message="Please enter an X-Coordinate">
+	                               	<p class="help-block text-danger"></p>
+	                            </div>
+	                            <div class="form-group floating-label-form-group controls form-group-custom">
+	                           		<label for="name">Y-Coordinate</label>
+	                               	<input type="number" class="form-control" placeholder="Y-Coordinate" id="y" required data-validation-required-message="Please enter a Y-Coordinate">
+	                               	<p class="help-block text-danger"></p>
+	                            </div>
+	                            <div class="form-group floating-label-form-group controls form-group-custom">
+	                           		<label for="name">Transparent Window</label>
+	                               	<!--  <input type="number" class="form-control" placeholder="Transparent Window" id="transparent" required data-validation-required-message="Please enter a height.">-->
+	                               	<select class="form-control" placeholder="Transparent Window" id="transparent" required>
+									    <option>True</option>
+									    <option>False</option>
+									</select>
+	                               	<p class="help-block text-danger"></p>
+	                            </div>
+	                            <div class="form-group floating-label-form-group controls form-group-custom">
+	                           		<label for="name">Window Always On Top</label>
+	                               	<input type="number" class="form-control" placeholder="Window Always On Top" id="alwaysOnTop" required data-validation-required-message="Please enter a height.">
+	                               	<p class="help-block text-danger"></p>
+	                            </div>
+	                            <div class="form-group floating-label-form-group controls form-group-custom">
+	                           		<label for="name">Show Frame</label>
+	                               	<input type="number" class="form-control" placeholder="Show Frame" id="frame" required data-validation-required-message="Please enter a height.">
+	                               	<p class="help-block text-danger"></p>
+	                            </div>
+                    		</div>
+                    	</div>
+                    
+                    
+                    
+                    
+                        <!-- <div class="row control-group">
                         	<div class="col-xs-12 form-group-wrapper">
                         		<div>Here's some info</div>
                         		<div class="form-group col-xs-12 floating-label-form-group controls">
@@ -125,12 +201,12 @@
                                 <textarea rows="5" class="form-control" placeholder="Message" id="message" required data-validation-required-message="Please enter a message."></textarea>
                                 <p class="help-block text-danger"></p>
                             </div>
-                        </div>
+                        </div> -->
                         <br>
                         <div id="success"></div>
                         <div class="row">
-                            <div class="form-group col-xs-12">
-                                <button type="submit" class="btn btn-success btn-lg">Send</button>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-success btn-lg center">Update</button>
                             </div>
                         </div>
                     </form>
