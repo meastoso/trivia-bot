@@ -1,7 +1,7 @@
 /**
  * Engine used to parse chat messages
  */
-//var chatOverlayDAO = require('./chat_overlay_DAO.js');
+var chatOverlayDAO = require('./chat_overlay_DAO.js');
 
 
 
@@ -38,5 +38,8 @@ module.exports = {
 		isMsgImportant: showMessage,
 		addExpressEndpoints: function(express, expressApp) {
 			expressApp.use("/config", express.static('chat_overlay/config_page'));
+			expressApp.get('/getConfig', function (req, res) {
+				res.send(chatOverlayDAO.getConfig());
+			});
 		}
 }

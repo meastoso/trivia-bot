@@ -8,6 +8,9 @@ var twitchApp = require('../twitch/twitch.js');
 var config = require('../config');
 var logger = require('../logger');
 var chatParser = require('./chat_parser.js');
+var chatOverlayDAO = require('./chat_overlay_DAO.js');
+var overlayConfig = chatOverlayDAO.getConfig();
+console.log("overlayConfig: " + JSON.stringify(overlayConfig));
 
 var channelName = config.twitch.channelName;
 
@@ -57,6 +60,7 @@ expressApp.listen(config.web.port, function () {
 twitchApp.addExpressEndpoints(express, expressApp);
 chatParser.addExpressEndpoints(express, expressApp);
 
+/* http://localhost:3000/config/config.html */
 
 
 /**
@@ -86,7 +90,8 @@ if (config.electron === undefined || config.electron === null || config.electron
 	
 	function createWindow () {
 	  // Create the browser window.
-	  win = new BrowserWindow({width: 800, height: 600})
+		// TODO: make these values configurable
+	  win = new BrowserWindow({width: overlayConfig.overlaywindow.width, height: overlayConfig.overlaywindow.height, frame: overlayConfig.overlaywindow.frame, transparent: overlayConfig.overlaywindow.transparent, alwaysOnTop: overlayConfig.overlaywindow.alwaysOnTop, x: overlayConfig.overlaywindow.x, y: overlayConfig.overlaywindow.y})
 	
 	  // and load the index.html of the app.
 	  win.loadURL(url.format({
@@ -96,7 +101,7 @@ if (config.electron === undefined || config.electron === null || config.electron
 	  }))
 	
 	  // Open the DevTools.
-	  win.webContents.openDevTools()
+	  //win.webContents.openDevTools()
 	
 	  // Emitted when the window is closed.
 	  win.on('closed', () => {
