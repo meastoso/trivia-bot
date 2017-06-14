@@ -91,7 +91,7 @@ if (config.electron === undefined || config.electron === null || config.electron
 	function createWindow () {
 	  // Create the browser window.
 		// TODO: make these values configurable
-	  win = new BrowserWindow({width: overlayConfig.overlaywindow.width, height: overlayConfig.overlaywindow.height, frame: overlayConfig.overlaywindow.frame, transparent: overlayConfig.overlaywindow.transparent, alwaysOnTop: overlayConfig.overlaywindow.alwaysOnTop, x: overlayConfig.overlaywindow.x, y: overlayConfig.overlaywindow.y})
+	  win = new BrowserWindow({width: overlayConfig.chatapp.overlaywindow.width, height: overlayConfig.chatapp.overlaywindow.height, frame: overlayConfig.chatapp.overlaywindow.frame, transparent: overlayConfig.chatapp.overlaywindow.transparent, alwaysOnTop: overlayConfig.chatapp.overlaywindow.alwaysOnTop, x: overlayConfig.chatapp.overlaywindow.x, y: overlayConfig.chatapp.overlaywindow.y})
 	
 	  // and load the index.html of the app.
 	  win.loadURL(url.format({

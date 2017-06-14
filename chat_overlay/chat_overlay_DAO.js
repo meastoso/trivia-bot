@@ -18,14 +18,13 @@ function getConfig() {
 	var configJSON;
 	// first check if we have a config file already or if this is first startup
 	try {
-		configJSON = require("../config.json");
+		//configJSON = require("../config.json");
+		configJSON = require("../config.js");
 	}
 	catch (e) {
 		console.log("Unable to read configuration - " + e);
 		console.log("...returning initial configuration.");
 		configJSON = getInitialConfigJSON();
-		// TODO: Don't write the file here once we have the UI to configure properties
-		putConfig(configJSON);
 	}
 	return configJSON;
 }
