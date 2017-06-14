@@ -93,115 +93,125 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-10 col-lg-offset-1">
+                <div class="col-lg-12">
                     <form name="updateConfig" id="form_updateConfig" >
                     	<div class="row">
-                    		<div class="col-xs-6 form-group-wrapper">
-                    			<h4>Chat Window Properties</h4>
-                    			<p>These values are used when creating the chat overlay window. When updated, the overlay window will be adjusted accordingly.</p>
-                    			<!-- 
-                    			/* Chat Overlay Config Defaults */
-	config.overlaywindow = {};
-	config.overlaywindow.x = 220;
-	config.overlaywindow.y = 0;
-	config.overlaywindow.width = 350;
-	config.overlaywindow.height = 200;
-	config.overlaywindow.transparent = false; // TODO; change back after debugging
-	config.overlaywindow.alwaysOnTop = false; // TODO; change back after debugging
-	config.overlaywindow.frame = false;
-	// TODO: let users customize chat message properties, i.e. color, size, font, etc.
-	
-	/* Define filters sub-category of config */
-	config.filters = {};
-	
-	/* User-related filters */
-	config.filters.user = {};
-	config.filters.user.totalMessagesThreshold = "1"; // "users with less than 'x' total messages"
-	config.filters.user.totalBitsDonatedThreshold = "5000"; // show messages from users who have donated more than $50 in bits
-	
-	/* Regex-related */
-	config.filters.regex = {};
-	config.filters.regex.whitelistUser = ["meastoso"]; // whitelist of users who's messages will always be shown in the app
-	config.filters.regex.whitelistPhrases = ["@meastoso", "hi"]; // for now just "contains" the string will match, but eventually we can customize the matcher, i.e. "endsWith()"
-	
-                    			 -->
-                    			
-                   				<div class="form-group floating-label-form-group controls form-group-custom">
-	                           		<label for="name">Height</label>
-	                               	<input type="number" class="form-control" placeholder="Height" id="height" required data-validation-required-message="Please enter a height.">
-	                               	<p class="help-block text-danger"></p>
+                    		<div class="col-xs-4 form-group-wrapper">
+                    			<div>
+	                    			<h4>Chat Window Properties</h4>
+	                    			<p>These values are used when creating the chat overlay window. When updated, the overlay window will be adjusted accordingly.</p>
+	                   				<div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">Height</label>
+		                               	<input type="number" class="form-control" placeholder="Height" id="height" required data-validation-required-message="Please enter a height.">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+		                            <div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">Width</label>
+		                               	<input type="number" class="form-control" placeholder="Width" id="width" required data-validation-required-message="Please enter a width">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+		                            <div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">X-Coordinate</label>
+		                               	<input type="number" class="form-control" placeholder="X-Coordinate" id="x" required data-validation-required-message="Please enter an X-Coordinate">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+		                            <div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">Y-Coordinate</label>
+		                               	<input type="number" class="form-control" placeholder="Y-Coordinate" id="y" required data-validation-required-message="Please enter a Y-Coordinate">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+		                            <!-- Switches (true/false) below here -->
+		                            <div class="form-group-custom switch-wrapper">
+		                            	<span>Transparent Window</span>
+		                            	<label class="switch">
+											<input type="checkbox" id="transparent">
+											<div class="slider"></div>
+										</label>
+		                            </div>
+		                            <div class="form-group-custom switch-wrapper">
+		                            	<span>Window Always On Top</span>
+		                            	<label class="switch">
+											<input type="checkbox" id="alwaysOnTop">
+											<div class="slider"></div>
+										</label>
+		                            </div>
+		                            <div class="form-group-custom switch-wrapper">
+		                            	<span>Show Frame</span>
+		                            	<label class="switch">
+											<input type="checkbox" id="frame">
+											<div class="slider"></div>
+										</label>
+		                            </div>
 	                            </div>
-	                            <div class="form-group floating-label-form-group controls form-group-custom">
-	                           		<label for="name">Width</label>
-	                               	<input type="number" class="form-control" placeholder="Width" id="width" required data-validation-required-message="Please enter a width">
-	                               	<p class="help-block text-danger"></p>
-	                            </div>
-	                            <div class="form-group floating-label-form-group controls form-group-custom">
-	                           		<label for="name">X-Coordinate</label>
-	                               	<input type="number" class="form-control" placeholder="X-Coordinate" id="x" required data-validation-required-message="Please enter an X-Coordinate">
-	                               	<p class="help-block text-danger"></p>
-	                            </div>
-	                            <div class="form-group floating-label-form-group controls form-group-custom">
-	                           		<label for="name">Y-Coordinate</label>
-	                               	<input type="number" class="form-control" placeholder="Y-Coordinate" id="y" required data-validation-required-message="Please enter a Y-Coordinate">
-	                               	<p class="help-block text-danger"></p>
-	                            </div>
-	                            <div class="form-group floating-label-form-group controls form-group-custom">
-	                           		<label for="name">Transparent Window</label>
-	                               	<!--  <input type="number" class="form-control" placeholder="Transparent Window" id="transparent" required data-validation-required-message="Please enter a height.">-->
-	                               	<select class="form-control" placeholder="Transparent Window" id="transparent" required>
-									    <option>True</option>
-									    <option>False</option>
-									</select>
-	                               	<p class="help-block text-danger"></p>
-	                            </div>
-	                            <div class="form-group floating-label-form-group controls form-group-custom">
-	                           		<label for="name">Window Always On Top</label>
-	                               	<input type="number" class="form-control" placeholder="Window Always On Top" id="alwaysOnTop" required data-validation-required-message="Please enter a height.">
-	                               	<p class="help-block text-danger"></p>
-	                            </div>
-	                            <div class="form-group floating-label-form-group controls form-group-custom">
-	                           		<label for="name">Show Frame</label>
-	                               	<input type="number" class="form-control" placeholder="Show Frame" id="frame" required data-validation-required-message="Please enter a height.">
-	                               	<p class="help-block text-danger"></p>
-	                            </div>
+	                            <div class="form-group-wrapper-sub">
+                    				<h4>Whitelisted Usernames</h4>
+	                    			<p>Whitelisted Usernames is a collection of usernames that are guaranteed to always show messages from those users in the overlay chat app.</p>
+	                    			<div class="add-user-wrapper">
+	                    				<p><a href="#" class="add-user" id="addUserButton">Add Username +</a></p>
+	                    				<div class="form-group floating-label-form-group controls form-group-custom add-user-form-group" id="addUserFormGroup">
+			                           		<label for="name">Username</label>
+			                               	<input type="text" class="form-control" placeholder="Username" id="input_addUsername">
+			                               	<button class="btn btn-success btn-lg" id="submitUserButton">Add</button>
+			                               	<p class="help-block text-danger"></p>
+			                            </div>
+	                    			</div>
+	                    			<div class="users-container">
+	                    				<div class="user">
+	                    					<img class="img-responsive user-img" src="img/user_icon.svg" alt="">
+	                    					<span class="name">meastoso</span>
+	                    					<a href="#"><img class="img-responsive del-img" src="img/del_icon.png" alt=""></a>
+	                    				</div>
+	                    				<div class="user">
+	                    					<img class="img-responsive user-img" src="img/user_icon.svg" alt="">
+	                    					<span class="name">mizzteq</span>
+	                    					<a href="#"><img class="img-responsive del-img" src="img/del_icon.png" alt=""></a>
+	                    				</div>
+	                    			</div>
+                    			</div>
+                    		</div>
+                    		<div class="col-xs-7 form-group-wrapper col-lg-offset-1">
+                    			<div>
+                    				<h4>Twitch Bot Credentials</h4>
+	                    			<p>Provide the bot username and OAUTH token for the app to join the twitch IRC channel specified here.</p>
+	                    			<p>If you don't know your bot's OAUTH token <a href="http://twitchapps.com/tmi/" target="_blank">click here</a> to sign in and get it.</p>
+	                    			<div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">Channel Name</label>
+		                               	<input type="text" class="form-control" placeholder="Channel Name" id="channel" required data-validation-required-message="Please enter a channel name.">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+		                            <div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">Bot Username</label>
+		                               	<input type="text" class="form-control" placeholder="Bot Username" id="botUsername" required data-validation-required-message="Please enter a Bot Username.">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+		                            <div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">Bot OAUTH Token</label>
+		                               	<input type="text" class="form-control" placeholder="Bot OAUTH Token" id="botPassword" required data-validation-required-message="Please enter a Bot OATH Token.">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+                    			</div>
+                    			<div class="form-group-wrapper-sub">
+                    				<h4>User Total Messages Threshold</h4>
+	                    			<p>Indicates to the bot to show chat messages from any user if the user has less than 'x' total messages so far today in the channel, where 'x' is the value input here.</p>
+	                    			<p><i>For example</i>: if you set 2, the first two messages any user enters into your twitch channel is guaranteed be shown by the overlay chat app</p>
+	                    			<div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">User Total Messages Threshold</label>
+		                               	<input type="text" class="form-control" placeholder="User Total Messages Threshold" id="totalMessagesThreshold" required data-validation-required-message="Please enter a channel name.">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+                    			</div>
+                    			<div class="form-group-wrapper-sub">
+                    				<h4>User Total Bits Donated Threshold</h4>
+	                    			<p>Indicates to the bot to show messages from any user if the user has donated more than 'x' number of bits, where 'x' is the value input here.</p>
+	                    			<p><i>For example</i>: if you set 5000, any messages from users who have donated more than 5000 bits are guaranteed to be shown in the overlay chat app window</p>
+	                    			<div class="form-group floating-label-form-group controls form-group-custom">
+		                           		<label for="name">User Total Bits Donated Threshold</label>
+		                               	<input type="text" class="form-control" placeholder="User Total Bits Donated Threshold" id="totalBitsDonatedThreshold" required data-validation-required-message="Please enter a channel name.">
+		                               	<p class="help-block text-danger"></p>
+		                            </div>
+                    			</div>
                     		</div>
                     	</div>
-                    
-                    
-                    
-                    
-                        <!-- <div class="row control-group">
-                        	<div class="col-xs-12 form-group-wrapper">
-                        		<div>Here's some info</div>
-                        		<div class="form-group col-xs-12 floating-label-form-group controls">
-	                           		<label for="name">Name</label>
-	                               	<input type="text" class="form-control" placeholder="Name" id="name" required data-validation-required-message="Please enter your name.">
-	                               	<p class="help-block text-danger"></p>
-	                            </div>
-                        	</div>
-                        </div>
-                        <div class="row control-group">
-                            <div class="form-group col-xs-12 floating-label-form-group controls">
-                                <label for="email">Email Address</label>
-                                <input type="email" class="form-control" placeholder="Email Address" id="email" required data-validation-required-message="Please enter your email address.">
-                                <p class="help-block text-danger"></p>
-                            </div>
-                        </div>
-                        <div class="row control-group">
-                            <div class="form-group col-xs-12 floating-label-form-group controls">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" class="form-control" placeholder="Phone Number" id="phone" required data-validation-required-message="Please enter your phone number.">
-                                <p class="help-block text-danger"></p>
-                            </div>
-                        </div>
-                        <div class="row control-group">
-                            <div class="form-group col-xs-12 floating-label-form-group controls">
-                                <label for="message">Message</label>
-                                <textarea rows="5" class="form-control" placeholder="Message" id="message" required data-validation-required-message="Please enter a message."></textarea>
-                                <p class="help-block text-danger"></p>
-                            </div>
-                        </div> -->
                         <br>
                         <div id="success"></div>
                         <div class="row">
@@ -214,6 +224,47 @@
             </div>
         </div>
     </section>
+    
+    <!-- 
+    /**
+ * totalMessagesThreshold indicates to the bot to show chat messages from any user
+ * if the user has less than 'x' total message so far today in the channel, where 'x'
+ * is the value selected. For example, if you set '2', the first two messages any user enters
+ * into your twitch channel will be shown by the overlay chat app
+ */
+config.chatapp.filters.user.totalMessagesThreshold = "1"; // "users with less than 'x' total messages"
+/**
+ * totalBitsDonatedThreshold indicates to the bot to show messages from any user
+ * if the user has donated more than 'x' number of bits, where 'x' is the value selected.
+ * For example, if you set '5000', any messages from users who have donated more than 5000 bits
+ * will be shown in the overlay chat app window.
+ */
+config.chatapp.filters.user.totalBitsDonatedThreshold = "5000"; // show messages from users who have donated more than $50 in bits
+/**
+ * whitelistUsers is a collection of usernames that will always show messages in the overlay
+ * chat app. For example, if the value set is '["meastoso", "mtqcapture"]' any messages from
+ * meastoso or mtqcapture are displayed in the overlay chat app window.
+ * 
+ * NOTE: When editing this value, ensure that the format is: ["name1", "name2", "name3"]
+ */
+config.chatapp.filters.regex.whitelistUsers = ["meastoso", "mtqcapture"]; // whitelist of users who's messages will always be shown in the app
+/**
+ * whitelistPhrases is a collection of strings that will allow the bot to show any messages
+ * containing any of these strings on the overlay chat app. This whitelist is case-insensitive 
+ * so capitalization does not matter. Here are a few examples:
+ * 
+ * Phrase			Example Message that will pass through to the overlay chat app
+ * ____________		_____________________________________________________________
+ * "@meastoso"		"Hey @meastoso what did you think of last night's episode of barney?"
+ * "hello"			"Hello meast how are you whats up!"
+ * "hi"				"man i got so high last night" 
+ * 						NOTE: you prob wanted just the word "hi" but at this time it also includes any words with "hi" in it
+ * 								(This will be coming in a later update, you can select "starts with", "ends with", "equals", "contains", etc.)
+ * "meast"			"meast what are you doing dude..."
+ */
+config.chatapp.filters.regex.whitelistPhrases = ["@meastoso", "hi"]; // for now just "contains" the string will match, but eventually we can customize the matcher, i.e. "endsWith()"
+    
+     -->
 
     <!-- About Section -->
     <section class="success" id="about">

@@ -26,5 +26,36 @@
 		req.always(function() {
 			console.log( "second finished" );
 		});
+		
+		$("#addUserButton").on("click", function(e) {
+			e.preventDefault();
+			$("#addUserFormGroup").slideToggle();
+		});
+		
+		$("#submitUserButton").on("click", function(e) {
+			e.preventDefault();
+			createUserDiv($("#input_addUsername").val());
+			$("#input_addUsername").val('');
+		});
+		
+		function createUserDiv(username) {
+			var userImg = $("<img class='img-responsive user-img' src='img/user_icon.svg'>");
+			var usernameSpan = $("<span class='name'>" + username + "</span>");
+			var delImg = $("<a href='#'><img class='img-responsive del-img' src='img/del_icon.png'></a>");
+			var newUserDiv = $("<div class='user'></div>");
+			newUserDiv.append(userImg).append(usernameSpan).append(delImg);
+			$(".users-container").append(newUserDiv);
+			setClickHandlersForDeleteUser();
+		}
+		
+		function setClickHandlersForDeleteUser() {
+			$(".del-img").on("click", function(e) {
+				e.preventDefault();
+				$(this).closest("div.user").remove();
+			});
+		}
+		
+		setClickHandlersForDeleteUser(); // do this on page load for any existing delete things
+		
 	});
 })(jQuery);

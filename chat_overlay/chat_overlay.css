@@ -4,14 +4,16 @@
 span.username {
 	padding-right: 5px;
 	font-weight: bold;
-	color: darkcyan;
+	color: darkcyan; /* overwritten by javascript */
 }
 
 span.message {
-	color: lightgrey;
+	color: white;
 	font-weight: bold;
 }
 
 .messageContainer {
 	display: none; /* hidden by default; shown via javascript */
+	font-size: 14pt;
+	margin-bottom: 5px;
 }

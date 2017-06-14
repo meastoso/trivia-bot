@@ -18,15 +18,32 @@
 		</div> -->
 	</div>
 	<script>
-	function pushNewMessage(username, message) {
+	function pushNewMessage(user, message) {
+		var username = user.username;
 		console.log("username: " + username + "   message: " + message);
-		var usernameSpan = $("<span class='username'>" + username + "</span>");
+		var color = user.color;
+		try {
+			color = LightenDarkenColor(color, 10); // make color a little brighter so its easier to read
+		}
+		catch (e) {
+			console.log(e);
+		}
+		var usernameSpan = $("<span class='username' style='color: #" + color + "'>" + username + "</span>");
 		var messageSpan = $("<span class='message'>" + message + "</span>");
 		var currentMilliseconds = new Date().getTime();
 		var newMessageDiv = $("<div class='messageContainer' data-msgtime='" + currentMilliseconds + "'></div>");
 		newMessageDiv.append(usernameSpan).append(messageSpan);
 		$("#mainContainer").append(newMessageDiv);
 		$(".messageContainer").last().slideDown();
+	}
+	
+	function LightenDarkenColor(col,amt) {
+	    var num = parseInt(col,16);
+	    var r = (num >> 16) + amt;
+	    var b = ((num >> 8) & 0x00FF) + amt;
+	    var g = (num & 0x0000FF) + amt;
+	    var newColor = g | (b << 8) | (r << 16);
+	    return newColor.toString(16);
 	}
 	
 	$(function () {
@@ -37,12 +54,12 @@
 
 	    connection.onopen = function () {
 	        // connection is opened and ready to use
-		console.log("connection is open and ready to use for websockets");
+			console.log("connection is open and ready to use for websockets");
 	    };
 
 	    connection.onerror = function (error) {
 	        // an error occurred when sending/receiving data
-		console.log("error occurred setting up connection: " + error);
+			console.log("error occurred setting up connection: " + error);
 	    };
 
 	    connection.onmessage = function (message) {
@@ -51,11 +68,7 @@
 	            var json = JSON.parse(message.data);
 				console.log("got the json, object is:");
 				console.log(json);
-				
-				pushNewMessage(json.user.username, json.message);
-				
-				
-				
+				pushNewMessage(json.user, json.message);
 				
 	        } catch (e) {
 	        	console.log(e);
@@ -69,7 +82,7 @@
 	// clean-up old messages
 	// TODO: allow user to configure interval
 	var timeout = 3000; // clean-up every 3 seconds
-	var secondsToKeepMessages = 15; // message will dissapear in 10 seconds after appearing TODO: get this from config
+	var secondsToKeepMessages = 20; // message will dissapear in 10 seconds after appearing TODO: get this from config
 	var cleanupTask = function() {
 		var currentMilliseconds = new Date().getTime();
 	    // loop through each message container and check to see if we should purge it
