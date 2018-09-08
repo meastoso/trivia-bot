@@ -10,9 +10,13 @@ var logger = require('../logger');
 var chatParser = require('./chat_parser.js');
 var chatOverlayDAO = require('./chat_overlay_DAO.js');
 var overlayConfig = chatOverlayDAO.getConfig();
-console.log("overlayConfig: " + JSON.stringify(overlayConfig));
+var player = require('play-sound')(opts = {});
+var hueController = require('../hue/hue-lights.js');
+var spotifyController = require('../spotify/spotify-web-helper.js');
 
-var channelName = config.twitch.channelName;
+const {app, BrowserWindow} = require('electron')
+
+var channelName = overlayConfig.twitch.channelName;
 
 var WebSocketServer = require('websocket').server;
 var http = require('http');
@@ -59,6 +63,17 @@ expressApp.listen(config.web.port, function () {
 });
 twitchApp.addExpressEndpoints(express, expressApp);
 chatParser.addExpressEndpoints(express, expressApp);
+// TODO: Figure out why put endpoints suck dick fuck you express
+expressApp.get('/putConfig', function (req, res) {
+	var config = req.query;
+	chatOverlayDAO.putConfig(config);
+	// refresh the current config cached
+	overlayConfig = config;
+	createWindow();
+	res.send("OK");
+});
+
+
 
 /* http://localhost:3000/config/config.html */
 
@@ -74,13 +89,26 @@ function sendClientMsg(msgObj) {
 	connection.sendUTF(JSON.stringify(msgObj));
 }
 
+let showWindow = true;
 
+/*process.argv.forEach(function (val, index, array) {
+  console.log(index + ': ' + val);
+  if (index == 3 && val == '-no-window') {
+	  showWindow = false;
+  }
+});*/
+
+if (process.argv[2] == '-no-window') {
+	showWindow = false;
+}
 
 /*********************************
 *   ELECTRON CODE HERE
 *********************************/
-if (config.electron === undefined || config.electron === null || config.electron == true) {
-	const {app, BrowserWindow} = require('electron')
+//if (config.electron === undefined || config.electron === null || config.electron == true) {
+	//const {app, BrowserWindow} = require('electron')
+	//const remote = require('electron').remote;
+if (showWindow) {
 	const path = require('path')
 	const url = require('url')
 	
@@ -90,8 +118,10 @@ if (config.electron === undefined || config.electron === null || config.electron
 	
 	function createWindow () {
 	  // Create the browser window.
-		// TODO: make these values configurable
-	  win = new BrowserWindow({width: overlayConfig.chatapp.overlaywindow.width, height: overlayConfig.chatapp.overlaywindow.height, frame: overlayConfig.chatapp.overlaywindow.frame, transparent: overlayConfig.chatapp.overlaywindow.transparent, alwaysOnTop: overlayConfig.chatapp.overlaywindow.alwaysOnTop, x: overlayConfig.chatapp.overlaywindow.x, y: overlayConfig.chatapp.overlaywindow.y})
+		var frame = (overlayConfig.chatapp.overlaywindow.frame == 'true');
+		var transparent = (overlayConfig.chatapp.overlaywindow.transparent == 'true');
+		var alwaysOnTop = (overlayConfig.chatapp.overlaywindow.alwaysOnTop == 'true');
+	  win = new BrowserWindow({width: parseInt(overlayConfig.chatapp.overlaywindow.width), height: parseInt(overlayConfig.chatapp.overlaywindow.height), frame: frame, transparent: transparent, alwaysOnTop: alwaysOnTop, x: parseInt(overlayConfig.chatapp.overlaywindow.x), y: parseInt(overlayConfig.chatapp.overlaywindow.y)})
 	
 	  // and load the index.html of the app.
 	  win.loadURL(url.format({
@@ -134,6 +164,7 @@ if (config.electron === undefined || config.electron === null || config.electron
 	  }
 	})
 }
+//}
 
 
 /*********************************
@@ -157,10 +188,13 @@ function isGameStarted() {
 	return triviaEngine.isGameStarted();
 }
 
+let sessionId = '';
+
 /**
  * Function to parse chat message for bot commands
  */
 client.on('chat', function(channel, user, message, self) {
+	console.log('user id is: ' + user['user-id']);
 	if (self) return;
 	try {
 		var username = user['username'];
@@ -169,7 +203,7 @@ client.on('chat', function(channel, user, message, self) {
 				'message': message
 		}
 		// pass the message through the filter method
-		if (chatParser.isMsgImportant(msgObj)) {
+		if (showWindow && chatParser.isMsgImportant(msgObj)) {
 			sendClientMsg(msgObj);
 		}
 		/* ###########################
@@ -216,10 +250,10 @@ client.on('chat', function(channel, user, message, self) {
 		/* ###########################
 		 *     !trivia
 		 * ########################### */
-        else if (message.startsWith("!trivia")) {
+        /*else if (message.startsWith("!trivia")) {
             var msg = "We're playing TRIVIA! Throughout the stream we will ask random trivia questions. You can answer with the command '!guess <your answer>'. You can change your answer with the same '!guess' command as many times as you need until a mod answers the question. Use '!score' to find out your score."
             client.say(channelName, msg);
-        }
+        }*/
 		/* ###########################
 		 *      !start
 		 * ##########################*/
@@ -233,6 +267,143 @@ client.on('chat', function(channel, user, message, self) {
 		else if (username === channelName && message.startsWith("!testguess")) {
 			triviaEngine.testGuess();
 		}
+		else if (message.startsWith("!misszo")) {
+			var msg = "did you guys know @miss_zo is AMAZING cook?!?! check out her cooking blog at https://misszocooks.wordpress.com";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!hype")) {
+			var msg = "meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype meastoHype";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!server")) {
+			var msg = "~-.-~ meast is playing on Behemoth [Primal] ~-.-~";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!pldpov")) {
+			var msg = "Interested in the PLD point-of-view during our RAID?! Check out Mizzteq's stream! She gives out free bread with honey on it! twitch.tv/mtqcapture";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!discord")) {
+			var msg = "We have a stream DISCORD! Come hang out! https://discord.gg/P8AdrAQ";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!meangirls")) {
+			var msg = "commands are: !getinloser, !karen, !sears, !fetch, !butter, !pink, !shedoesntgohere and !youcantsitwithus LELEL";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!shoutout ")) {
+			var shoutoutTarget = message.substring(10, message.length);
+			var msg = "My dear friend " + shoutoutTarget + " is an AWESOME STREAMER! Check them out at www.twitch.tv/" + shoutoutTarget;
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!trivia")) {
+			var msg = "meastoso is the creator of TriviaChamp, the twitch extension you see in the top-left corner of the screen! Give it a whirl and let us know what you think!";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!getinloser")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\getInLoser.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!karen")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\ohMyGodKaren.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!sears")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\sears.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!fetch")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\fetch.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!butter")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\butterCarb.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!pink")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\pink.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!shedoesntgohere")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\doesntGoHere.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!youcantsitwithus")) {
+	    	// $ mplayer foo.mp3 
+	    	player.play('D:\\twitch_plugins\\sounds\\youCantSitWithUs.mp3', function(err){
+	    	  if (err) throw err
+	    	})
+	    }
+		else if (message.startsWith("!colors")) {
+			var msg = "Set the color of meast's room with the new !setcolor command. Available colors are: red, yellow, green, cyan, blue and magenta. Use !customcolor <red> <green> <blue> to set a custom color of your choice where each color is a number between 0 and 255!";
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!setcolor ")) {
+			var color = message.substring(10, message.length);
+			if (color == 'red') {
+				hueController.setOfficeRed();
+			}
+			else if (color == 'yellow') {
+				hueController.setOfficeYellow();
+			}
+			else if (color == 'green') {
+				hueController.setOfficeGreen();
+			}
+			else if (color == 'cyan') {
+				hueController.setOfficeCyan();
+			}
+			else if (color == 'blue') {
+				hueController.setOfficeBlue();
+			}
+			else if (color == 'magenta') {
+				hueController.setOfficeMagenta();
+			}
+			else {
+				var msg = 'That color is not yet supported.';
+				client.say(channelName, msg);
+			}
+		}
+		else if (message.startsWith("!customcolor ")) {
+			var commandArgs = message.substring(13, message.length).split(" ");
+			var msg = 'Invalid: must specify 3 numbers between 0-255, i.e. !customcolor 255 255 255';
+			if (commandArgs.length != 3) {
+				client.say(channelName, msg);
+			}
+			else {
+				var r = parseInt(commandArgs[0]);
+				var g = parseInt(commandArgs[1]);
+				var b = parseInt(commandArgs[2]);
+				if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+					client.say(channelName, msg);
+				}
+				else {
+					hueController.setCustom(r, g, b);
+				}
+			}
+		}
+		else if (username === channelName && message.startsWith("!setsession ")) {
+			sessionId = message.substring(12, message.length);
+			var msg = "Successfully set session ID to: " + sessionId;
+			client.say(channelName, msg);
+		}
+		else if (message.startsWith("!session")) {
+			var msg = "Meastoso's current Monster Hunter Session ID: " + sessionId;
+			client.say(channelName, msg);
+		}
 	}
 	catch(error) {
 		console.log("ERROR: " + error);
@@ -240,4 +411,8 @@ client.on('chat', function(channel, user, message, self) {
 
 });
 
+client.on("subscription", function (channel, username) {
+	var msg = 'Thanks for bearbacking, ' + username + '! Also, make sure to practice safe-sex, xoxo';
+	client.say(channelName, msg);
+});
 
